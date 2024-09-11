@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "lib": ["es2019"],
+    "allowSyntheticDefaultImports": true,
+    "strictNullChecks": true,
+    "strict": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "paths": {
+      "@/*": ["scripts/*"],
+      "@dist/*": ["dist/*"],
+    }
+  },
+  "include": ["scripts"],
+  "exclude": ["lint-staged.config.js"]
+}
