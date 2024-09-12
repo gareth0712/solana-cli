@@ -8,23 +8,50 @@ import {
   sendAndConfirmTransaction,
 } from '@solana/web3.js';
 import fs from 'mz/fs';
+import { writeFile } from 'fs/promises';
 import yaml from 'yaml';
 import 'dotenv/config';
 
-import { CONFIG_FILE_PATH, loadKeypairFromFile, logger } from '.';
+import { CONFIG_FILE_PATH, ACCOUNTS_DEFAULT_FILENAME, loadKeypairFromFile, logger } from '.';
 
-/*
-  Generate an account (keypair) to transact with our program
-*/
-export const generateKeypair = async (): Promise<Keypair> => {
+/**
+ * Generate a new account (keypair) to transact with our program
+ */
+export const generateKeypair = (): Keypair => {
   logger.section(`========== Generating Local Account =========`);
-  const generatedKeypair = Keypair.generate();
-  return generatedKeypair;
+  return Keypair.generate();
 };
 
-/*
-  Request airdrop solana (Beware of cooldown after request)
-*/
+/**
+ * Save Keypair to a file
+ *
+ * @param publicKey
+ * @param path - path to save the keypair
+ */
+export const saveKeypair = async (keypair: Keypair, path: string = ACCOUNTS_DEFAULT_FILENAME) => {
+  // Extract the secret key and convert it to a regular array for JSON serialization
+  const secretKey = Array.from(keypair.secretKey);
+  logger.log('Its Secret Key is: ', secretKey);
+
+  // Save the secret key array to a JSON file
+  await writeFile(path, JSON.stringify(secretKey));
+  logger.success(`Secret key saved to ${path}`);
+};
+
+export const verifyKeypair = (keypair: Keypair, publicKey: PublicKey): Boolean => {
+  const isKeypairMatchPubKey = keypair.publicKey.toBase58() === publicKey.toBase58();
+  const logMessage = `Is the Public key ${publicKey.toBase58()} matched against the provided secretKey? ${isKeypairMatchPubKey}`;
+
+  if (isKeypairMatchPubKey) {
+    logger.success(logMessage);
+  } else {
+    logger.fail(logMessage);
+  }
+  return isKeypairMatchPubKey;
+};
+/**
+ * Request airdrop solana (Beware of cooldown after request)
+ */
 export const getAirdropSol = async (
   connection: Connection,
   publicKey: PublicKey,
@@ -34,9 +61,9 @@ export const getAirdropSol = async (
   await connection.confirmTransaction(airdropRequest);
 };
 
-/*
-  Either load Keypair or generate a local account (ensure there is +ve SOL balance)
-*/
+/**
+ * Either load Keypair or generate a local account (ensure there is +ve SOL balance)
+ */
 export const getAccount = async (): Promise<Keypair> => {
   logger.section(`========== Getting Local Account =========`);
   let keypair: Keypair;
@@ -54,9 +81,9 @@ export const getAccount = async (): Promise<Keypair> => {
   return keypair;
 };
 
-/*
-  Configure client account for program to store the state and modify its data. Create if it doesn't exist
-*/
+/**
+ * Configure client account for program to store the state and modify its data. Create if it doesn't exist
+ */
 export const configureClientAccount = async ({
   connection,
   localAccountKeypair,

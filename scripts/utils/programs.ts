@@ -5,8 +5,13 @@ import {
   Transaction,
   TransactionInstruction,
   sendAndConfirmTransaction,
+  SystemProgram,
+  LAMPORTS_PER_SOL,
 } from '@solana/web3.js';
 import path from 'path';
+import { Buffer } from 'buffer';
+
+const lo = require('buffer-layout');
 
 import {
   PROGRAM_PATH,
@@ -19,11 +24,38 @@ import {
   createCalculatorInstructions,
 } from '.';
 
-/*
-  Get the following for targeted program (ensure you have already deployed the program):
-  - program keypair: Keypair we used to create the on-chain Rust program
-  - programId
-*/
+// ======================== System Program ========================
+/**
+ * Here we are sending lamports using the Rust program we wrote.
+ */
+export const transferSol = async (
+  connection: Connection,
+  from: Keypair,
+  to: PublicKey,
+  amount: number,
+) => {
+  // 1 SOL = 1,000,000,000 (1 billion) lamports
+  const transaction = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: from.publicKey,
+      toPubkey: to,
+      lamports: LAMPORTS_PER_SOL * amount,
+    }),
+  );
+
+  // Send and confirm the transaction
+  const signature = await sendAndConfirmTransaction(connection, transaction, [from]);
+
+  console.log('Transaction signature:', signature);
+};
+
+// ======================== Other Programs ========================
+
+/**
+ * Get the following for targeted program (ensure you have already deployed the program):
+ * a) program keypair: Keypair we used to create the on-chain Rust program;
+ * b) programId
+ */
 export const getProgram = async (
   programName: string,
 ): Promise<{ programKeypair: Keypair; programId: PublicKey }> => {
@@ -39,9 +71,32 @@ export const getProgram = async (
   return { programKeypair, programId };
 };
 
-/*
-  Ping the program.
-*/
+const createInstruction = async (
+  programId: PublicKey,
+  amount: string,
+  from: Keypair,
+  to: PublicKey,
+) => {
+  let data = Buffer.alloc(8); // 8 bytes
+  // lo.ns64("value").encode(new BN(amount), data);
+  lo.ns64('value').encode(amount, data);
+
+  let ins = new TransactionInstruction({
+    keys: [
+      { pubkey: from.publicKey, isSigner: true, isWritable: true }, // debit sol balance
+      { pubkey: to, isSigner: false, isWritable: true }, // credit sol balance
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }, // invoke system program for transfer of sol
+    ],
+    programId: programId,
+    data: data,
+  });
+
+  await sendAndConfirmTransaction(connection, new Transaction().add(ins), [from]);
+};
+
+/**
+ * Ping the program.
+ */
 export async function pingProgram({
   connection,
   programName,
@@ -108,9 +163,9 @@ export type CalculatorArgs = {
   operatingValue: number;
 };
 
-/*
-  Operate calculator program with given operation and operating value
-*/
+/**
+ * Operate calculator program with given operation and operating value
+ */
 export async function operateAdvancedCounter({
   connection,
   args,

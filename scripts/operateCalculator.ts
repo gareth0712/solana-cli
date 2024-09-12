@@ -7,8 +7,6 @@ import { NETWORKS, operateAdvancedCounterFromConnection } from '@/utils';
 /*
 Account Data
 */
-
-// TODO: multicall, event listeners, etc.
 class Calculator {
   value = 0;
   constructor(fields: { value: number } | undefined = undefined) {
