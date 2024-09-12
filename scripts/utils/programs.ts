@@ -34,19 +34,25 @@ export const transferSol = async (
   to: PublicKey,
   amount: number,
 ) => {
-  // 1 SOL = 1,000,000,000 (1 billion) lamports
+  // 1 SOL = 1,000,000,000 (i.e. 1 * 10^9) lamports
+  const lamports = LAMPORTS_PER_SOL * amount;
+  logger.log(`Transferring ${amount} SOL from ${from.publicKey.toBase58()}`);
+  logger.log(`to ${to.toBase58()}`);
   const transaction = new Transaction().add(
     SystemProgram.transfer({
       fromPubkey: from.publicKey,
       toPubkey: to,
-      lamports: LAMPORTS_PER_SOL * amount,
+      lamports,
     }),
   );
 
-  // Send and confirm the transaction
-  const signature = await sendAndConfirmTransaction(connection, transaction, [from]);
-
-  console.log('Transaction signature:', signature);
+  try {
+    // Send and confirm the transaction
+    const signature = await sendAndConfirmTransaction(connection, transaction, [from]);
+    logger.success('Transaction signature:', signature);
+  } catch (error) {
+    logger.fail('Transaction failed:', error);
+  }
 };
 
 // ======================== Other Programs ========================
