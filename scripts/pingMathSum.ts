@@ -1,6 +1,6 @@
 import * as borsh from 'borsh';
 
-import { NETWORKS, pingProgramFromConnection } from '@/utils';
+import { NETWORKS, pingProgramFromConnection, logger } from '@/utils';
 
 class MathStuffSum {
   sum = 0;
@@ -28,7 +28,7 @@ async function main() {
 main().then(
   () => process.exit(),
   (err) => {
-    console.error(err);
+    logger.fail(err);
     process.exit(-1);
   },
 );

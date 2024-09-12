@@ -1,4 +1,4 @@
-import { pingProgramFromConnection } from '@/utils';
+import { pingProgramFromConnection, logger } from '@/utils';
 
 // run the following command in CLI ahead to ensure you can get the log message properly:
 // $ solana logs | grep "<program id deployed on devnet> invoke" -A 3
@@ -11,7 +11,7 @@ main().then(
   () => process.exit(),
   (err) => {
     console.log('Error occurred running the cli program');
-    console.error(err);
+    logger.fail(err);
     process.exit(-1);
   },
 );

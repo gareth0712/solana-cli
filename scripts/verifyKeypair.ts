@@ -1,8 +1,10 @@
 import { PublicKey, Keypair } from '@solana/web3.js';
 import bs58 from 'bs58';
-import { verifyKeypair } from '@/utils';
+
+import { verifyKeypair, logger } from '@/utils';
 
 const main = async () => {
+  // new_account.json
   const publicKey = new PublicKey('H5BANcerHrJCwTim8ywJ3Nhpfo9PWvGtCwE45bXsgD72');
 
   // Load keypair from secret key in(Uint8Array)
@@ -15,7 +17,7 @@ const main = async () => {
   const keypair = Keypair.fromSecretKey(secretKey);
   // Load keypair from secret key in Base58 string
   const secretKeyInBs58 = bs58.encode(secretKey);
-  console.log('Secret key in Base58:', secretKeyInBs58);
+  logger.log('Secret key in Base58:', secretKeyInBs58);
 
   verifyKeypair(keypair, publicKey);
 };
@@ -23,7 +25,7 @@ const main = async () => {
 main().then(
   () => process.exit(),
   (err) => {
-    console.error(err);
+    logger.fail(err);
     process.exit(-1);
   },
 );
