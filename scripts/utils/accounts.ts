@@ -69,6 +69,13 @@ export const verifyKeypair = (keypair: Keypair, publicKey: PublicKey): Boolean =
 };
 
 /**
+ * Convert a secret key from Base58 to a Uint8Array
+ */
+export const getKeypairFromBase58 = (base58: string): Keypair => {
+  return Keypair.fromSecretKey(bs58.decode(base58));
+};
+
+/**
  * Validate whether the provided public key is a Program Derived Address (PDA)
  * @param publicKey
  * @returns boolean - true if PDA, false otherwise
