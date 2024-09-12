@@ -1,16 +1,20 @@
 import { Keypair, Connection } from '@solana/web3.js';
 import fs from 'mz/fs';
 
+import type { Commitment } from '@solana/web3.js';
+
 import { NETWORKS, logger } from '.';
 
 /*
   Connect to Solana network given rpc url.
 */
-export const connectSolRpc = async (rpcUrl?: string): Promise<Connection> => {
+export const connectSolRpc = async (
+  rpcUrl: string = NETWORKS.LOCALHOST,
+  commitmentLv: Commitment = 'confirmed',
+): Promise<Connection> => {
   logger.section(`=========== Network Connection ===========`);
-  if (rpcUrl === undefined) rpcUrl = NETWORKS.LOCALHOST;
-  logger.log(`Connecting to sol rpc: ${rpcUrl}...`);
-  const connection = new Connection(rpcUrl, 'confirmed');
+  logger.log(`Connecting to sol rpc: ${rpcUrl} at commitment level: ${commitmentLv} ...`);
+  const connection = new Connection(rpcUrl, commitmentLv);
 
   logger.success(`Successfully connected to Solana network.`);
   return connection;
