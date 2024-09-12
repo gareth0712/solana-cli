@@ -15,6 +15,24 @@ import 'dotenv/config';
 import { CONFIG_FILE_PATH, ACCOUNTS_DEFAULT_FILENAME, loadKeypairFromFile, logger } from '.';
 
 /**
+ * Generate a new account (keypair) with specified prefix
+ * @param prefix - prefix for the seed
+ *
+ * @returns
+ */
+export const generateVanityAddress = (prefix: string, suffix: string): Keypair => {
+  let keypair: Keypair = Keypair.generate();
+  while (
+    !keypair.publicKey.toBase58().startsWith(prefix) ||
+    !keypair.publicKey.toBase58().endsWith(suffix)
+  ) {
+    keypair = Keypair.generate();
+  }
+
+  return keypair;
+};
+
+/**
  * Generate a new account (keypair) to transact with our program
  */
 export const generateKeypair = (): Keypair => {
@@ -49,6 +67,22 @@ export const verifyKeypair = (keypair: Keypair, publicKey: PublicKey): Boolean =
   }
   return isKeypairMatchPubKey;
 };
+
+/**
+ * Validate whether the provided public key is a Program Derived Address (PDA)
+ * @param publicKey
+ * @returns boolean - true if PDA, false otherwise
+ */
+export const validatePDA = (publicKey: PublicKey): boolean => {
+  const isPDA = !PublicKey.isOnCurve(publicKey);
+  if (isPDA) {
+    logger.success(`The public key ${publicKey.toBase58()} is a Program Derived Address (PDA)`);
+  } else {
+    logger.fail(`The public key ${publicKey.toBase58()} is not a Program Derived Address (PDA)`);
+  }
+  return isPDA;
+};
+
 /**
  * Request airdrop solana (Beware of cooldown after request)
  */
