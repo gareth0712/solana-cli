@@ -17,7 +17,7 @@ import {
   PROGRAM_PATH,
   loadKeypairFromFile,
   connectSolRpc,
-  getAccount,
+  getDefaultAccount,
   configureClientAccount,
   logger,
   getStringForInstruction,
@@ -61,7 +61,7 @@ export const getProgram = async (
 ): Promise<{ programKeypair: Keypair; programId: PublicKey }> => {
   logger.section(`============= Program ====================`);
   // e.g. hello_solana => hello_solana-keypair.json
-  const programKeypair: Keypair = await loadKeypairFromFile(
+  const { keypair: programKeypair } = await loadKeypairFromFile(
     path.join(PROGRAM_PATH, programName + '-keypair.json'),
   );
   const programId: PublicKey = programKeypair.publicKey;
@@ -72,6 +72,7 @@ export const getProgram = async (
 };
 
 const createInstruction = async (
+  connection: Connection,
   programId: PublicKey,
   amount: string,
   from: Keypair,
@@ -137,7 +138,7 @@ export const pingProgramFromConnection = async (
   const { programId } = await getProgram(programName);
 
   let localAccountKeypair: Keypair, clientPublicKey: PublicKey;
-  localAccountKeypair = await getAccount();
+  localAccountKeypair = await getDefaultAccount();
 
   if (options?.accountSpaceSize !== undefined) {
     clientPublicKey = await configureClientAccount({
@@ -186,9 +187,9 @@ export async function operateAdvancedCounter({
   const { operation, operatingValue } = args;
 
   let calcInstructions = await createCalculatorInstructions(operation, operatingValue);
-  console.log('calcInstructions: ', calcInstructions);
+  logger.log('calcInstructions: ', calcInstructions);
 
-  console.log(`We're going to ${await getStringForInstruction(operation, operatingValue)}`);
+  logger.log(`We're going to ${await getStringForInstruction(operation, operatingValue)}`);
 
   const instruction = new TransactionInstruction({
     keys: [{ pubkey: clientAccountPubkey, isSigner: false, isWritable: true }],
@@ -215,7 +216,7 @@ export const operateAdvancedCounterFromConnection = async (
   const { programId } = await getProgram(programName);
 
   let localAccountKeypair: Keypair, clientPublicKey: PublicKey;
-  localAccountKeypair = await getAccount();
+  localAccountKeypair = await getDefaultAccount();
 
   if (options?.accountSpaceSize !== undefined) {
     clientPublicKey = await configureClientAccount({

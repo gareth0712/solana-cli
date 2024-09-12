@@ -96,23 +96,37 @@ export const getAirdropSol = async (
 };
 
 /**
- * Either load Keypair or generate a local account (ensure there is +ve SOL balance)
+ * Load default Keypair (ensure there is +ve SOL balance)
  */
-export const getAccount = async (): Promise<Keypair> => {
-  logger.section(`========== Getting Local Account =========`);
+export const getDefaultAccount = async (): Promise<Keypair> => {
+  logger.section(`========== Getting Default Account =========`);
   let keypair: Keypair;
-  if (fs.existsSync(CONFIG_FILE_PATH)) {
+  if (!fs.existsSync(CONFIG_FILE_PATH)) {
+    logger.fail(`Config file not found at ${CONFIG_FILE_PATH}. Have you installed the Solana CLI?`);
+    throw new Error('Config file not found');
+  }
+
+  try {
     const configYml = await fs.readFile(CONFIG_FILE_PATH, { encoding: 'utf8' });
     const keypairPath = await yaml.parse(configYml).keypair_path;
-    logger.log('keypair file (id.json) found. Reading local account...');
-    keypair = await loadKeypairFromFile(keypairPath);
-    logger.log(`Local account loaded successfully.`);
-  } else {
-    keypair = await generateKeypair();
-    logger.log(`Local account generated successfully.`);
+    if (keypairPath === '' || keypairPath === null || keypairPath === undefined) {
+      logger.fail(
+        `Default account not found in ${CONFIG_FILE_PATH}. Please create one and ensure it has a positive SOL balance.`,
+      );
+      logger.fail('You can create a default account using `solana-keygen new`');
+      throw new Error('Default account not found');
+    }
+
+    logger.log('keypair file (id.json) found. Reading default account...');
+    ({ keypair } = await loadKeypairFromFile(keypairPath));
+    logger.log(`Default account loaded successfully.`);
+
+    logger.success(`Default Account public key is: ${keypair.publicKey.toBase58()}`);
+    return keypair;
+  } catch (e) {
+    logger.fail(`Error getting default keypair file from config file`);
+    throw e;
   }
-  logger.success(`Local Account public key is: ${keypair.publicKey.toBase58()}`);
-  return keypair;
 };
 
 /**
