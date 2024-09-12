@@ -7,9 +7,12 @@ import {
   Transaction,
   sendAndConfirmTransaction,
 } from '@solana/web3.js';
-import fs from 'mz/fs';
 import { writeFile } from 'fs/promises';
+import fs from 'mz/fs';
 import yaml from 'yaml';
+import bs58 from 'bs58';
+import nacl from 'tweetnacl';
+import { decodeUTF8 } from 'tweetnacl-util';
 import 'dotenv/config';
 
 import { CONFIG_FILE_PATH, ACCOUNTS_DEFAULT_FILENAME, loadKeypairFromFile, logger } from '.';
@@ -75,6 +78,28 @@ export const getKeypairFromBase58 = (base58: string): Keypair => {
   return Keypair.fromSecretKey(bs58.decode(base58));
 };
 
+export const signMessage = (message: string, keypair: Keypair): Uint8Array => {
+  logger.log('Public Key: ', keypair.publicKey.toBase58());
+  logger.log('Message to be signed:', message);
+  const messageBytes = decodeUTF8(message);
+  return nacl.sign.detached(messageBytes, keypair.secretKey);
+};
+
+export const verifySignature = (
+  message: string,
+  signature: Uint8Array,
+  publicKey: PublicKey,
+): boolean => {
+  const messageBytes = decodeUTF8(message);
+  const isValid = nacl.sign.detached.verify(messageBytes, signature, publicKey.toBytes());
+
+  if (isValid) {
+    logger.success(`Signature is valid and is signed by ${publicKey.toBase58()}`);
+  } else {
+    logger.fail(`Signature is not valid or is not signed by ${publicKey.toBase58()}`);
+  }
+  return isValid;
+};
 /**
  * Validate whether the provided public key is a Program Derived Address (PDA)
  * @param publicKey
