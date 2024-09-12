@@ -1,3 +1,4 @@
+import { clusterApiUrl } from '@solana/web3.js';
 import path from 'path';
 import os from 'os';
 
@@ -18,8 +19,8 @@ export const CONFIG_FILE_PATH = path.resolve(
 );
 
 export const NETWORKS = {
-  MAINNET: 'https://api.mainnet-beta.solana.com',
-  TESTNET: 'https://api.testnet.solana.com',
-  DEVNET: 'https://api.devnet.solana.com',
+  MAINNET: clusterApiUrl('mainnet-beta'),
+  TESTNET: clusterApiUrl('testnet'),
+  DEVNET: clusterApiUrl('devnet'),
   LOCALHOST: 'http://localhost:8899',
 };
