@@ -11,6 +11,8 @@ import { writeFile } from 'fs/promises';
 import fs from 'mz/fs';
 import yaml from 'yaml';
 import bs58 from 'bs58';
+import { mnemonicToSeedSync } from 'bip39';
+import { derivePath } from 'ed25519-hd-key';
 import nacl from 'tweetnacl';
 import { decodeUTF8 } from 'tweetnacl-util';
 import 'dotenv/config';
@@ -72,10 +74,38 @@ export const verifyKeypair = (keypair: Keypair, publicKey: PublicKey): Boolean =
 };
 
 /**
- * Convert a secret key from Base58 to a Uint8Array
+ * Restore a secret key from Base58 to a Keypair
  */
-export const getKeypairFromBase58 = (base58: string): Keypair => {
+export const restoreKeypairFromBase58 = (base58: string): Keypair => {
   return Keypair.fromSecretKey(bs58.decode(base58));
+};
+
+export const restoreKeypairFromMnemonic = (
+  mnemonic: string,
+): { keypairs: Keypair[]; base58SecretKeys: string[] } => {
+  const keypairs: Keypair[] = [];
+  const base58SecretKeys: string[] = [];
+  const seed = mnemonicToSeedSync(mnemonic, ''); // (mnemonic, password)
+
+  for (let i = 0; i < 10; i++) {
+    const path = `m/44'/501'/${i}'/0'`;
+    const keypair = Keypair.fromSeed(derivePath(path, seed.toString('hex')).key);
+    keypairs.push(keypair);
+    logger.log(`Restored Public Key #${i} using ${path} => ${keypair.publicKey.toBase58()}`);
+    // verifyKeypair(keypair, keypair.publicKey);
+
+    const base58SecretKey = getBase58FromKeypair(keypair);
+    // logger.success(`Public Key #${i}'s Base58 Secret Key: ${base58SecretKey}`);
+    base58SecretKeys.push(base58SecretKey);
+  }
+  return { keypairs, base58SecretKeys };
+};
+/**
+ * Convert a Keypair to Base58 secret key
+ */
+export const getBase58FromKeypair = (keypair: Keypair): string => {
+  const secretKey: Uint8Array = keypair.secretKey;
+  return bs58.encode(secretKey);
 };
 
 export const signMessage = (message: string, keypair: Keypair): Uint8Array => {

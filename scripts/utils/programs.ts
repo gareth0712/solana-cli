@@ -56,7 +56,6 @@ export const transferSol = async (
 };
 
 // ======================== Other Programs ========================
-
 /**
  * Get the following for targeted program (ensure you have already deployed the program):
  * a) program keypair: Keypair we used to create the on-chain Rust program;
