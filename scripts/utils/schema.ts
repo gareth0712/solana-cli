@@ -2,7 +2,7 @@ import * as borsh from 'borsh';
 
 // ====================== Program Schema =======================
 // A) Calculator ===============================================
-// Account Data
+// Account Data Structure
 export class Calculator {
   value = 0;
 
@@ -17,7 +17,7 @@ export const CalculatorSchema = new Map([
   [Calculator, { kind: 'struct', fields: [['value', 'u32']] }],
 ]);
 
-// Instruction Data
+// Instruction Data Structure
 export class CalculatorInstructions {
   operation = 0;
   operating_value = 0;

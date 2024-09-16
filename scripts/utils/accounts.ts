@@ -48,6 +48,18 @@ export const getDefaultAccount = async (): Promise<Keypair> => {
   }
 };
 
+export const derivePublicKeyWithSeed = async (
+  basePublicKey: PublicKey,
+  seed: string,
+  programId: PublicKey,
+): Promise<PublicKey> => {
+  return await PublicKey.createWithSeed(
+    basePublicKey,
+    seed,
+    programId, // adding the programId here makes the program owns the client account
+  );
+};
+
 /**
  * Configure client account for program to store the state and modify its data. Create if it doesn't exist
  */
@@ -64,13 +76,8 @@ export const configureDataAccount = async ({
 }): Promise<PublicKey> => {
   logger.section(`================== Getting Data Account ================`);
   const SEED = process.env.SEED ?? 'test1';
-  const dataPubKey: PublicKey = await PublicKey.createWithSeed(
-    localAccountKeypair.publicKey,
-    SEED,
-    programId, // adding the programId here makes the program owns the client account
-  );
-
-  logger.log(`For simplicity's sake, we've created an address using a seed: ${SEED}`);
+  const dataPubKey: PublicKey = await derivePublicKeyWithSeed(localAccountKeypair.publicKey, SEED, programId);
+  logger.log(`For simplicity's sake, we've derive an address using a seed: ${SEED}`);
 
   // Make sure it doesn't exist already.
   let dataAccount = await connection.getAccountInfo(dataPubKey);
