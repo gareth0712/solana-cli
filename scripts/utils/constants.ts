@@ -2,10 +2,9 @@ import { clusterApiUrl } from '@solana/web3.js';
 import path from 'path';
 import os from 'os';
 
+// ====================== General Constants =======================
 export const PROGRAM_PATH = path.resolve(__dirname, '../../dist/program');
-
 export const ACCOUNTS_PATH = path.resolve(__dirname, '../../accounts');
-
 export const ACCOUNTS_DEFAULT_FILENAME = path.resolve(ACCOUNTS_PATH, 'new_account.json');
 /**
  * Path to Solana CLI config file.

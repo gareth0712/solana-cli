@@ -18,7 +18,7 @@ import { CONFIG_FILE_PATH, loadKeypairFromFile, logger } from '.';
  * Load default Keypair (ensure there is +ve SOL balance)
  */
 export const getDefaultAccount = async (): Promise<Keypair> => {
-  logger.section(`========== Getting Default Account =========`);
+  logger.section(`=========== Getting Default Account as Signer ==========`);
   let keypair: Keypair;
   if (!fs.existsSync(CONFIG_FILE_PATH)) {
     logger.fail(`Config file not found at ${CONFIG_FILE_PATH}. Have you installed the Solana CLI?`);
@@ -51,7 +51,7 @@ export const getDefaultAccount = async (): Promise<Keypair> => {
 /**
  * Configure client account for program to store the state and modify its data. Create if it doesn't exist
  */
-export const configureClientAccount = async ({
+export const configureDataAccount = async ({
   connection,
   localAccountKeypair,
   programId,
@@ -62,9 +62,9 @@ export const configureClientAccount = async ({
   programId: PublicKey;
   accountSpaceSize: number;
 }): Promise<PublicKey> => {
-  logger.section(`========== Getting Client Account =========`);
+  logger.section(`================== Getting Data Account ================`);
   const SEED = process.env.SEED ?? 'test1';
-  const clientPubKey: PublicKey = await PublicKey.createWithSeed(
+  const dataPubKey: PublicKey = await PublicKey.createWithSeed(
     localAccountKeypair.publicKey,
     SEED,
     programId, // adding the programId here makes the program owns the client account
@@ -73,8 +73,8 @@ export const configureClientAccount = async ({
   logger.log(`For simplicity's sake, we've created an address using a seed: ${SEED}`);
 
   // Make sure it doesn't exist already.
-  let clientAccount = await connection.getAccountInfo(clientPubKey);
-  if (clientAccount === null) {
+  let dataAccount = await connection.getAccountInfo(dataPubKey);
+  if (dataAccount === null) {
     logger.log(`Looks like that account does not exist. Let's create it.`);
 
     const transaction = new Transaction().add(
@@ -82,7 +82,7 @@ export const configureClientAccount = async ({
         fromPubkey: localAccountKeypair.publicKey,
         basePubkey: localAccountKeypair.publicKey,
         seed: SEED,
-        newAccountPubkey: clientPubKey,
+        newAccountPubkey: dataPubKey,
         lamports: LAMPORTS_PER_SOL,
         space: accountSpaceSize,
         programId,
@@ -94,6 +94,25 @@ export const configureClientAccount = async ({
   } else {
     logger.success(`Looks like that account exists already. We can just use it.`);
   }
-  logger.success(`The client public key is: ${clientPubKey.toBase58()}`);
-  return clientPubKey;
+  logger.success(`The client public key is: ${dataPubKey.toBase58()}`);
+  return dataPubKey;
+};
+
+export const getDataAccount = async (
+  connection: Connection,
+  localAccountKeypair: Keypair,
+  programId: PublicKey,
+  accountSpaceSize?: number,
+): Promise<PublicKey> => {
+  let clientPublicKey = localAccountKeypair.publicKey;
+  if (accountSpaceSize !== undefined) {
+    clientPublicKey = await configureDataAccount({
+      connection,
+      localAccountKeypair,
+      programId,
+      accountSpaceSize,
+    });
+  }
+
+  return clientPublicKey;
 };

@@ -11,7 +11,7 @@ export const connectSolRpc = (
   rpcUrl: string = NETWORKS.LOCALHOST,
   commitmentLv: Commitment = 'confirmed',
 ): Connection => {
-  logger.section(`=========== Network Connection ===========`);
+  logger.section(`================== Network Connection ==================`);
   logger.log(`Connecting to sol rpc: ${rpcUrl} at commitment level: ${commitmentLv} ...`);
   const connection = new Connection(rpcUrl, commitmentLv);
 

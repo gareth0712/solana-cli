@@ -1,6 +1,6 @@
 import * as borsh from 'borsh';
 
-import { NETWORKS, pingProgramFromConnection, logger } from '@/utils';
+import { NETWORKS, pingProgram, logger } from '@/utils';
 
 class MathStuffSum {
   sum = 0;
@@ -19,7 +19,7 @@ const MATH_STUFF_SIZE = borsh.serialize(MathStuffSumSchema, new MathStuffSum()).
 // $ solana logs | grep "<program id deployed on devnet> invoke" -A 3
 async function main() {
   const programName = 'p2_math_sum';
-  await pingProgramFromConnection(programName, {
+  await pingProgram(programName, {
     accountSpaceSize: MATH_STUFF_SIZE,
     rpcUrl: NETWORKS.DEVNET,
   });

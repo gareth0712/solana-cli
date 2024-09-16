@@ -1,77 +1,16 @@
-import * as borsh from 'borsh';
-
-import { NETWORKS, operateAdvancedCounterFromConnection, logger } from '@/utils';
-
-// --------------------------------------------------------
-
-/*
-Account Data
-*/
-class Calculator {
-  value = 0;
-  constructor(fields: { value: number } | undefined = undefined) {
-    if (fields) {
-      this.value = fields.value;
-    }
-  }
-}
-
-const CalculatorSchema = new Map([[Calculator, { kind: 'struct', fields: [['value', 'u32']] }]]);
-
-const CALCULATOR_SIZE = borsh.serialize(CalculatorSchema, new Calculator()).length;
-
-// --------------------------------------------------------
-
-/*
-Instruction Data
-*/
-
-export class CalculatorInstructions {
-  operation = 0;
-  operating_value = 0;
-  constructor(fields: { operation: number; operating_value: number } | undefined = undefined) {
-    if (fields) {
-      this.operation = fields.operation;
-      this.operating_value = fields.operating_value;
-    }
-  }
-}
-
-export const CalculatorInstructionsSchema = new Map([
-  [
-    CalculatorInstructions,
-    {
-      kind: 'struct',
-      fields: [
-        ['operation', 'u32'],
-        ['operating_value', 'u32'],
-      ],
-    },
-  ],
-]);
-
-export const CALCULATOR_INSTRUCTIONS_SIZE = borsh.serialize(
-  CalculatorInstructionsSchema,
-  new CalculatorInstructions(),
-).length;
-
-type CalculatorArgs = {
-  operation: number;
-  operatingValue: number;
-};
+import { NETWORKS, CALCULATOR_SIZE, operateCalculator, logger, CalculatorArgs } from '@/utils';
 
 // run the following command in cli ahead to ensure you can get the log message properly:
 // $ solana logs | grep "<program id deployed on devnet> invoke" -A 20
 async function main() {
   const programName = 'p4_calculator';
-  // p4 and p6 are similar
-  // const programName = 'p6_advanced_counter';
+
   const args: CalculatorArgs = {
     operation: 1,
-    operatingValue: 5,
+    operating_value: 6,
   };
 
-  await operateAdvancedCounterFromConnection(programName, args, {
+  await operateCalculator(programName, args, {
     accountSpaceSize: CALCULATOR_SIZE,
     rpcUrl: NETWORKS.DEVNET,
   });

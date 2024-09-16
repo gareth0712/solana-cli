@@ -1,10 +1,10 @@
-import { pingProgramFromConnection, logger } from '@/utils';
+import { pingProgram, logger, NETWORKS } from '@/utils';
 
 // run the following command in CLI ahead to ensure you can get the log message properly:
 // $ solana logs | grep "<program id deployed on devnet> invoke" -A 3
 async function main() {
   const programName = 'p1_hello_solana';
-  await pingProgramFromConnection(programName);
+  await pingProgram(programName, { rpcUrl: NETWORKS.DEVNET });
 }
 
 main().then(
