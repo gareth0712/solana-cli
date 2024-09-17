@@ -7,7 +7,7 @@ operation=$1
 script_dir="scripts"
 
 # Define the TypeScript file to be run (with a .ts extension)
-ts_file="$script_dir/$operation.ts"
+ts_file=$(find "$script_dir" -name "$operation.ts" -type f)
 
 # Check if the file exists
 if [ -f "$ts_file" ]; then

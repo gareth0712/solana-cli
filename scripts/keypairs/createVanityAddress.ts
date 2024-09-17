@@ -1,7 +1,7 @@
 import { Keypair } from '@solana/web3.js';
 import path from 'path';
 
-import { logger, generateVanityAddress, saveKeypair, ACCOUNTS_PATH } from './utils';
+import { logger, generateVanityAddress, saveKeypair, ACCOUNTS_PATH } from '@/utils';
 
 const main = async () => {
   const requiredPrefix = '69';

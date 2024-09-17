@@ -1,6 +1,6 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
 
-import { restoreKeypairFromBase58, verifyKeypair, logger } from './utils';
+import { restoreKeypairFromBase58, verifyKeypair, logger } from '@/utils';
 
 const main = async () => {
   // new_account.json

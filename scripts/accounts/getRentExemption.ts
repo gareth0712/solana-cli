@@ -1,6 +1,6 @@
 import { Connection } from '@solana/web3.js';
 
-import { logger, connectSolRpc, getMinimumBalanceForRentExemption, NETWORKS } from './utils';
+import { logger, connectSolRpc, getMinimumBalanceForRentExemption, NETWORKS } from '@/utils';
 
 const main = async () => {
   const connection: Connection = connectSolRpc(NETWORKS.DEVNET);

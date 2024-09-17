@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { loadKeypairFromFile, logger, ACCOUNTS_PATH } from './utils';
+import { loadKeypairFromFile, logger, ACCOUNTS_PATH } from '@/utils';
 
 const main = async () => {
   const filePath = path.resolve(ACCOUNTS_PATH, 'new_account.json');

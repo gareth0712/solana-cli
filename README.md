@@ -3,7 +3,7 @@
 This repo provides necessary scripts for connecting to Solana network, interacting with Solana
 System programs and other executable programs.
 
-## Client side handling
+## Installation
 
 - Install Solana Client packages
 
@@ -17,10 +17,10 @@ yarn
 yarn start <script_name>
 ```
 
-for example, to run `scripts/connectSolNetwork.ts`
+for example, to run `scripts/transactions/operateCalculator.ts`
 
 ```shell
-yarn start connectSolNetwork
+yarn start operateCalculator
 ```
 
 ## Solana CLI for Solana program
