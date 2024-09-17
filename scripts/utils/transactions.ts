@@ -45,13 +45,28 @@ export const getProgram = async (
 
 type Instruction = (...args: any[]) => TransactionInstruction;
 
-export const constructTransaction = (
+export const constructTransaction = async (
+  connection: Connection,
   instructionCreators: { instruction: Instruction; params: {} }[],
-): Transaction => {
-  let transaction = new Transaction();
+  options?: {
+    estimateFee?: boolean;
+    feePayer?: Keypair;
+  },
+): Promise<Transaction> => {
+  const recentBlockhash = await connection.getLatestBlockhash();
+  let transaction = new Transaction(recentBlockhash);
+
   instructionCreators.forEach(({ instruction, params }) => {
     transaction.add(instruction({ ...params }));
   });
+  if (options && options.estimateFee && options.feePayer) {
+    // Estimating fee requires fee payer to be set
+    transaction.feePayer = options.feePayer.publicKey;
+    const estimatedFee = await transaction.getEstimatedFee(connection);
+    logger.success(`Estimated fee for instruction: ${estimatedFee} lamports`);
+    process.exit();
+  }
+
   return transaction;
 };
 
@@ -85,7 +100,7 @@ export const transferSol = async (
   logger.log(`Transferring ${amount} SOL from ${from.publicKey.toBase58()}`);
   logger.log(`to ${to.toBase58()}`);
 
-  const transaction = constructTransaction([
+  const transaction = await constructTransaction(connection, [
     { instruction: getTransferSolInstruction, params: { from: from.publicKey, to, lamports } },
   ]);
 
@@ -112,7 +127,7 @@ export const pingProgram = async (
     programId,
     options?.accountSpaceSize,
   );
-  const transaction = constructTransaction([
+  const transaction = await constructTransaction(connection, [
     { instruction: getPingInstruction, params: { programId, dataAccountPubkey: clientPublicKey } },
   ]);
 
@@ -125,6 +140,7 @@ export const operateCalculator = async (
   options?: {
     accountSpaceSize?: number;
     rpcUrl?: string;
+    estimateFee?: boolean;
   },
 ) => {
   logger.section(`========= Launching Operate Calculator Client ==========`);
@@ -142,16 +158,23 @@ export const operateCalculator = async (
     options?.accountSpaceSize,
   );
 
-  const transaction = constructTransaction([
-    {
-      instruction: getCalculatorInstruction,
-      params: {
-        args,
-        programId,
-        dataAccountPubkey: clientPublicKey,
+  const transaction = await constructTransaction(
+    connection,
+    [
+      {
+        instruction: getCalculatorInstruction,
+        params: {
+          args,
+          programId,
+          dataAccountPubkey: clientPublicKey,
+        },
       },
+    ],
+    {
+      estimateFee: options?.estimateFee,
+      feePayer: localAccountKeypair,
     },
-  ]);
+  );
 
   await sendTransaction(connection, transaction, [localAccountKeypair]);
 };
@@ -184,7 +207,7 @@ export const multipleInstructions = async (
     options?.accountSpaceSize,
   );
 
-  const transaction = constructTransaction([
+  const transaction = await constructTransaction(connection, [
     {
       instruction: getTransferSolInstruction,
       params: {
