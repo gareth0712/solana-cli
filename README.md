@@ -108,6 +108,13 @@ Commitment: confirmed
 $ solana config set -k <absolute/path/to/keypair.json>
 ```
 
+8. Get Public Key (both program and wallet are applicable) from keypair
+
+```shell
+$ solana address -k target/deploy/hello_world_example-keypair.json
+6RTLRg3mjopTSDCfEPjEwT2siszbYE7EcafkXw3mT2rS
+```
+
 ### Program related commands
 
 - Init a new Solana program for development
@@ -130,4 +137,40 @@ $ cd <directory with .so file, usually in target/deploy/>
 $ solana program deploy program.so
 ```
 
-## Anchor CLI for Solana Project
+## Anchor CLI (Work in progress)
+
+- Init a new Anchor program
+
+```
+
+anchor init <project_name>
+
+```
+
+- create a new program
+
+```
+
+cd <project_name> anchor new <program_name>
+
+```
+
+- Build the program
+
+```
+
+anchor build
+
+```
+
+- Test the program
+
+```
+
+anchor test
+
+```
+
+```
+
+```

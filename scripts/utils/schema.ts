@@ -6,9 +6,9 @@ import * as borsh from 'borsh';
 export class Calculator {
   value = 0;
 
-  constructor(fields: { value: number } | undefined = undefined) {
-    if (fields) {
-      this.value = fields.value;
+  constructor(value?: number) {
+    if (value) {
+      this.value = value;
     }
   }
 }
@@ -21,10 +21,13 @@ export const CalculatorSchema = new Map([
 export class CalculatorInstructions {
   operation = 0;
   operating_value = 0;
-  constructor(fields: { operation: number; operating_value: number } | undefined = undefined) {
-    if (fields) {
-      this.operation = fields.operation;
-      this.operating_value = fields.operating_value;
+
+  constructor(operation?: number, operating_value?: number) {
+    if (operation) {
+      this.operation = operation;
+    }
+    if (operating_value) {
+      this.operating_value = operating_value;
     }
   }
 }
