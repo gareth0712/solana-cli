@@ -4,7 +4,7 @@ import {
   PublicKey,
   Transaction,
   sendAndConfirmTransaction,
-  SystemProgram,
+  TransactionInstruction,
   LAMPORTS_PER_SOL,
 } from '@solana/web3.js';
 import path from 'path';
@@ -15,11 +15,10 @@ import {
   connectSolRpc,
   getDefaultAccount,
   getDataAccount,
-  configureDataAccount,
   logger,
-  addTransferSolInstruction,
-  addPingInstruction,
-  addCalculatorInstruction,
+  getTransferSolInstruction,
+  getPingInstruction,
+  getCalculatorInstruction,
   CalculatorArgs,
 } from '.';
 
@@ -42,6 +41,18 @@ export const getProgram = async (
   logger.log(`We're going to ping the ${programName} program.`);
   logger.success(`Its Program ID is: ${programId.toBase58()}`);
   return { programKeypair, programId };
+};
+
+type Instruction = (...args: any[]) => TransactionInstruction;
+
+export const constructTransaction = (
+  instructionCreators: { instruction: Instruction; params: {} }[],
+): Transaction => {
+  let transaction = new Transaction();
+  instructionCreators.forEach(({ instruction, params }) => {
+    transaction.add(instruction({ ...params }));
+  });
+  return transaction;
 };
 
 export const sendTransaction = async (
@@ -74,7 +85,9 @@ export const transferSol = async (
   logger.log(`Transferring ${amount} SOL from ${from.publicKey.toBase58()}`);
   logger.log(`to ${to.toBase58()}`);
 
-  const transaction = addTransferSolInstruction(new Transaction(), from, to, lamports);
+  const transaction = constructTransaction([
+    { instruction: getTransferSolInstruction, params: { from, to, lamports } },
+  ]);
 
   await sendTransaction(connection, transaction, [from]);
 };
@@ -99,12 +112,9 @@ export const pingProgram = async (
     programId,
     options?.accountSpaceSize,
   );
-
-  const transaction = addPingInstruction({
-    transaction: new Transaction(),
-    programId,
-    dataAccountPubkey: clientPublicKey,
-  });
+  const transaction = constructTransaction([
+    { instruction: getPingInstruction, params: { programId, dataAccountPubkey: clientPublicKey } },
+  ]);
 
   await sendTransaction(connection, transaction, [localAccountKeypair]);
 };
@@ -132,12 +142,78 @@ export const operateCalculator = async (
     options?.accountSpaceSize,
   );
 
-  let transaction = addCalculatorInstruction({
-    transaction: new Transaction(),
-    args,
-    programId,
-    dataAccountPubkey: clientPublicKey,
-  });
+  const transaction = constructTransaction([
+    {
+      instruction: getCalculatorInstruction,
+      params: {
+        args,
+        programId,
+        dataAccountPubkey: clientPublicKey,
+      },
+    },
+  ]);
 
   await sendTransaction(connection, transaction, [localAccountKeypair]);
+};
+
+export const multipleInstructions = async (
+  programName: string,
+  args: CalculatorArgs,
+  options?: {
+    accountSpaceSize?: number;
+    rpcUrl?: string;
+    keypairs?: Keypair[];
+  },
+) => {
+  logger.section(`======= Launching Multiple Instructions Client =========`);
+  const connection: Connection = connectSolRpc(options?.rpcUrl);
+  const { programId } = await getProgram(programName);
+  logger.log(
+    `🚧 Going to send instruction to ${programName} program of programId ${programId.toBase58()}`,
+  );
+
+  if (!options?.keypairs || options?.keypairs.length != 3) {
+    throw new Error('Please provide 3 public keys for multiple instructions');
+  }
+
+  const [firstKeypair, secondKeypair, thirdKeypair] = options.keypairs;
+  const clientPublicKey: PublicKey = await getDataAccount(
+    connection,
+    firstKeypair,
+    programId,
+    options?.accountSpaceSize,
+  );
+
+  const transaction = constructTransaction([
+    {
+      instruction: getTransferSolInstruction,
+      params: {
+        from: firstKeypair,
+        to: secondKeypair.publicKey,
+        lamports: 1 * LAMPORTS_PER_SOL,
+      },
+    },
+    {
+      instruction: getTransferSolInstruction,
+      params: {
+        from: secondKeypair,
+        to: thirdKeypair.publicKey,
+        lamports: 0.5 * LAMPORTS_PER_SOL,
+      },
+    },
+    {
+      instruction: getCalculatorInstruction,
+      params: {
+        args,
+        programId,
+        dataAccountPubkey: clientPublicKey,
+      },
+    },
+  ]);
+
+  // A: firstKeypair, B: secondKeypair, and C: thirdKeypair
+  // 1st instruction (A transfer 1 sol to B) signed by A
+  // 2nd instruction (B transfer 0.5 sol to C) signed by B
+  // 3rd instruction (calculator instruction) signed by either A or B
+  await sendTransaction(connection, transaction, [firstKeypair, secondKeypair]);
 };
