@@ -12,17 +12,17 @@ import { logger, CalculatorArgs } from '.';
 
 // ================== System Program Instructions =================
 export const getTransferSolInstruction = ({
-  from,
-  to,
+  fromPubkey,
+  toPubkey,
   lamports,
 }: {
-  from: Keypair;
-  to: PublicKey;
+  fromPubkey: PublicKey;
+  toPubkey: PublicKey;
   lamports: number;
 }): TransactionInstruction => {
   return SystemProgram.transfer({
-    fromPubkey: from.publicKey,
-    toPubkey: to,
+    fromPubkey,
+    toPubkey,
     lamports,
   });
 };

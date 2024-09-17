@@ -86,7 +86,7 @@ export const transferSol = async (
   logger.log(`to ${to.toBase58()}`);
 
   const transaction = constructTransaction([
-    { instruction: getTransferSolInstruction, params: { from, to, lamports } },
+    { instruction: getTransferSolInstruction, params: { from: from.publicKey, to, lamports } },
   ]);
 
   await sendTransaction(connection, transaction, [from]);
@@ -188,7 +188,7 @@ export const multipleInstructions = async (
     {
       instruction: getTransferSolInstruction,
       params: {
-        from: firstKeypair,
+        from: firstKeypair.publicKey,
         to: secondKeypair.publicKey,
         lamports: 1 * LAMPORTS_PER_SOL,
       },
@@ -196,7 +196,7 @@ export const multipleInstructions = async (
     {
       instruction: getTransferSolInstruction,
       params: {
-        from: secondKeypair,
+        from: secondKeypair.publicKey,
         to: thirdKeypair.publicKey,
         lamports: 0.5 * LAMPORTS_PER_SOL,
       },
@@ -212,6 +212,8 @@ export const multipleInstructions = async (
   ]);
 
   // A: firstKeypair, B: secondKeypair, and C: thirdKeypair
+  // Assign A as fee payer
+  transaction.feePayer = secondKeypair.publicKey;
   // 1st instruction (A transfer 1 sol to B) signed by A
   // 2nd instruction (B transfer 0.5 sol to C) signed by B
   // 3rd instruction (calculator instruction) signed by either A or B
