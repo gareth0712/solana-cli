@@ -1,5 +1,5 @@
-import { PublicKey, Connection, Keypair } from '@solana/web3.js';
-import { getProgram, NETWORKS, getDefaultAccount, logger } from '@/utils';
+import { PublicKey, Keypair } from '@solana/web3.js';
+import { getProgram, getDefaultAccount, logger } from '@/utils';
 
 const main = async () => {
   const programName = 'p4_calculator';
