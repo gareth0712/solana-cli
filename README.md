@@ -23,6 +23,13 @@ for example, to run `scripts/transactions/operateCalculator.ts`
 yarn start operateCalculator
 ```
 
+- You can create a new account to the "accounts/" directory for use in scripts using the following
+  command
+
+```shell
+solana-keygen new --no-bip39-passphrase -o accounts/<account_name>.json
+```
+
 ## Solana CLI for Solana program
 
 ### Wallet related commands
