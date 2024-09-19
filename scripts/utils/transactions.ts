@@ -43,6 +43,7 @@ export const getProgram = async (
   return { programKeypair, programId };
 };
 
+// TODO: Add generic type checks for different instructions
 type Instruction = (...args: any[]) => TransactionInstruction;
 
 export const constructTransaction = async (
