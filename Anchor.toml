@@ -6,6 +6,9 @@ skip-lint = false
 
 [programs.localnet]
 anchor_cli = "D7TJt87PXKbj61gQ32rNQwsKxoVQn7WiwvjaPXL9oE6G"
+s1_signer_check = "9GT9KGjcEQdjMtAFxZdscbSFhCrkGMpTCVvsXpu7F52U"
+s2_data_owner_check = "GtynBuzYZMRrxsXTCGdEAcj48rW8af86mWqW7PomJVfP"
+s3_initialization = "2XgNEHdMacZbxqseRwxH1HzUjL8bkHs65kvpXrQ946Mf"
 
 [registry]
 url = "https://api.apr.dev"
